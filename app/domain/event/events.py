@@ -7,6 +7,6 @@ class EventCreated(DomainEvent):
 class EventPublished(DomainEvent):
     event_id_ref: UUID
 
-class EventCanceled(DomainEvent):
+class EventCancelled(DomainEvent):
     event_id_ref: UUID
 
