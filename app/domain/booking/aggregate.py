@@ -20,7 +20,7 @@ class Booking(AggregateRoot):
         event_id: UUID,
         category_id: UUID,
         quantity: int,
-        unit_price,          # Money
+        unit_price,
         status: BookingStatus = BookingStatus.PENDING_PAYMENT,
         payment_deadline: datetime | None = None,
         tickets: list[Ticket] | None = None,
@@ -43,13 +43,8 @@ class Booking(AggregateRoot):
         event_id: UUID,
         category_id: UUID,
         quantity: int,
-        unit_price,          # Money
+        unit_price,
     ) -> "Booking":
-        """
-        Factory method — validasi quantity dan buat booking baru.
-        Pemanggil (application layer) bertanggung jawab memvalidasi
-        BR15 (event Published) dan BR17 (satu booking per customer per event).
-        """
         if quantity <= 0:  # BR16
             raise DomainError("Quantity must be greater than zero")
 
