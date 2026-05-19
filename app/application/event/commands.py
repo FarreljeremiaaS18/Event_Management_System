@@ -16,3 +16,25 @@ class EventDTO:
     event_id: UUID
     name: str
     status: str
+
+@dataclass(frozen=True)
+class PublishEventCommand:
+    event_id: UUID
+
+@dataclass(frozen=True)
+class CancelEventCommand:
+    event_id: UUID
+
+@dataclass(frozen=True)
+class CreateTicketCategoryCommand:
+    event_id: UUID
+    name: str
+    price: float
+    quota: int
+    sales_start_date: datetime
+    sales_end_date: datetime
+
+@dataclass(frozen=True)
+class DisableTicketCategoryCommand:
+    event_id: UUID
+    category_id: UUID

@@ -48,6 +48,13 @@ class Event(AggregateRoot):
             
             self.ticket_categories.append(category)
         
+        def disable_ticket_category(self, category_id: UUID):
+            for category in self._ticket_categories:
+                if category.id == category_id:
+                    category.disable()
+                return
+        raise DomainError("Kategori tiket tidak ditemukan di dalam event ini.")
+        
         def publish(self):
             if self.status != EventStatus.DRAFT:
                 raise DomainError("Only events in draft status can be published")
@@ -68,3 +75,5 @@ class Event(AggregateRoot):
         @property
         def ticket_categories(self) -> List[TicketCategory]:
             return self._ticket_categories.copy()
+        
+        
