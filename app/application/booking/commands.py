@@ -11,3 +11,15 @@ class PayBookingCommand:
 class BookingDTO:
     booking_id: UUID
     status: str
+
+@dataclass(frozen=True)
+class CreateBookingCommand:
+    customer_id: UUID
+    event_id: UUID
+    category_id: UUID
+    quantity: int
+    unit_price: Decimal
+
+@dataclass(frozen=True)
+class ExpireBookingCommand:
+    booking_id: UUID
