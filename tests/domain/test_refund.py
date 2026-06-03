@@ -8,6 +8,7 @@ from app.domain.refund.events import (
     RefundRequested,
     RefundApproved,
     RefundRejected,
+    RefundPaidOut,
 )
 
 
@@ -90,3 +91,55 @@ class TestRefundRejection:
 
         with pytest.raises(DomainError):
             refund.reject("Too late")
+
+
+class TestRefundPayment:
+
+    def test_mark_paid_out_after_approval(self):
+        refund = Refund.request(
+            booking_id=uuid4(),
+            customer_id=uuid4(),
+            amount=100000
+        )
+
+        refund.approve()
+        refund.mark_paid_out("REF-001")
+
+        assert refund.status == RefundStatus.PAID_OUT
+        assert refund.payment_reference == "REF-001"
+        assert isinstance(refund.domain_events[-1], RefundPaidOut)
+
+    def test_cannot_mark_paid_out_without_approval(self):
+        refund = Refund.request(
+            booking_id=uuid4(),
+            customer_id=uuid4(),
+            amount=100000
+        )
+
+        with pytest.raises(DomainError):
+            refund.mark_paid_out("REF-001")
+
+    def test_mark_paid_out_requires_reference(self):
+        refund = Refund.request(
+            booking_id=uuid4(),
+            customer_id=uuid4(),
+            amount=100000
+        )
+
+        refund.approve()
+
+        with pytest.raises(DomainError):
+            refund.mark_paid_out("")
+
+    def test_cannot_mark_paid_out_twice(self):
+        refund = Refund.request(
+            booking_id=uuid4(),
+            customer_id=uuid4(),
+            amount=100000
+        )
+
+        refund.approve()
+        refund.mark_paid_out("REF-001")
+
+        with pytest.raises(DomainError):
+            refund.mark_paid_out("REF-002")
