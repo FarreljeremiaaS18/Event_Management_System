@@ -34,46 +34,47 @@ class Event(AggregateRoot):
         self.max_capacity = max_capacity
 
         self.status = EventStatus.DRAFT
-        self.ticket_categories: List[TicketCategory] = []
+        
+        self._ticket_categories: List[TicketCategory] = []
 
         self.add_domain_event(EventCreated(event_id_ref=self.id))
 
-        def add_ticket_category(self, category: TicketCategory):
-            current_total_quota = sum(c.quota for c in self.ticket_categories)
-            if current_total_quota + category.quota > self.max_capacity:
-                raise DomainError("Total quota of ticket categories cannot exceed max capacity")
-            
-            if category.sales_end_date > self.start_date:
-                raise DomainError("Ticket sales end date must be before event start date")
-            
-            self.ticket_categories.append(category)
+    
+    def add_ticket_category(self, category: TicketCategory):
+        current_total_quota = sum(c.quota for c in self._ticket_categories)
+        if current_total_quota + category.quota > self.max_capacity:
+            raise DomainError("Total quota of ticket categories cannot exceed max capacity")
         
-        def disable_ticket_category(self, category_id: UUID):
-            for category in self._ticket_categories:
-                if category.id == category_id:
-                    category.disable()
+        if category.sales_end_date > self.start_date:
+            raise DomainError("Ticket sales end date must be before event start date")
+        
+        self._ticket_categories.append(category)
+    
+    def disable_ticket_category(self, category_id: UUID):
+        for category in self._ticket_categories:
+            if category.id == category_id:
+                category.disable()
                 return
         raise DomainError("Kategori tiket tidak ditemukan di dalam event ini.")
+    
+    def publish(self):
+        if self.status != EventStatus.DRAFT:
+            raise DomainError("Only events in draft status can be published")
         
-        def publish(self):
-            if self.status != EventStatus.DRAFT:
-                raise DomainError("Only events in draft status can be published")
-            
-            active_categories = [c for c in self.ticket_categories if c.is_active]
-            if not active_categories:
-                raise DomainError("Cannot publish event without active ticket categories")
-            
-            self.status = EventStatus.PUBLISHED
+        active_categories = [c for c in self._ticket_categories if c.is_active]
+        if not active_categories:
+            raise DomainError("Cannot publish event without active ticket categories")
         
-        def cancel(self):
-            if self.status != EventStatus.PUBLISHED:
-                raise DomainError("Only published events can be canceled")
+        self.status = EventStatus.PUBLISHED
+        self.add_domain_event(EventPublished(event_id_ref=self.id))
+    
+    def cancel(self):
+        if self.status != EventStatus.PUBLISHED:
+            raise DomainError("Only published events can be canceled")
         
         self.status = EventStatus.CANCELLED
         self.add_domain_event(EventCancelled(event_id_ref=self.id))
 
-        @property
-        def ticket_categories(self) -> List[TicketCategory]:
-            return self._ticket_categories.copy()
-        
-        
+    @property
+    def ticket_categories(self) -> List[TicketCategory]:
+        return self._ticket_categories.copy()
