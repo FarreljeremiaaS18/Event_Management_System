@@ -3,6 +3,7 @@ from uuid import UUID
 from app.domain.booking.aggregate import Booking
 from app.domain.booking.repository import IBookingRepository
 from app.domain.booking.value_objects import BookingStatus
+from app.domain.ticket.value_objects import TicketCode
 
 
 class BookingRepository(IBookingRepository):
@@ -36,3 +37,10 @@ class BookingRepository(IBookingRepository):
 
     def save(self, booking: Booking) -> None:
         self._bookings[booking.id.value] = booking
+    
+    def find_by_ticket_code(self, code: TicketCode) -> Booking | None:
+        for booking in self._bookings.values():
+            for ticket in booking.tickets:
+                if ticket.code.value == code.value:
+                    return booking
+        return None
