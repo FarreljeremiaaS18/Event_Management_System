@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from app.presentation.api import events, bookings, tickets, refunds
+from app.infrastructure.persistence.db import engine
+from app.infrastructure.persistence.models import Base
 
-
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Event Management System API",
