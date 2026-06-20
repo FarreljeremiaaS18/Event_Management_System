@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.presentation.api import events, bookings
+from app.presentation.api import events, bookings, tickets, refunds
 
 
 
@@ -12,6 +12,8 @@ app = FastAPI(
 
 app.include_router(events.router)
 app.include_router(bookings.router)
+app.include_router(tickets.router)
+app.include_router(refunds.router)
 
 @app.get("/")
 def root():
